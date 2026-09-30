@@ -1,5 +1,44 @@
-﻿import { Accessibility, ArrowRight, HeartHandshake } from 'lucide-react'
-import { Link } from 'react-router-dom'
-export default function AuthChoice() {
- return <main className="grid min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 px-4 py-12 sm:place-items-center"><section className="mx-auto my-auto w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/60 sm:p-10"><div className="flex items-center gap-3"><span className="grid size-12 place-items-center rounded-2xl bg-blue-700 text-white"><Accessibility/></span><span className="text-xl font-bold text-slate-950">AccessiNav</span></div><p className="mt-8 text-sm font-semibold uppercase tracking-wide text-blue-800">Accessible journeys start here</p><h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-950">Go places with more confidence.</h1><p className="mt-4 leading-7 text-slate-600">Plan around access needs, discover local accessibility details, and share what you learn.</p><div className="mt-8 grid gap-3"><Link to="/home" className="flex min-h-12 items-center justify-between rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800">Explore AccessiNav<ArrowRight size={18}/></Link><div className="grid gap-3 sm:grid-cols-2"><Link to="/login" className="rounded-xl border border-slate-300 px-5 py-3 text-center font-semibold text-slate-800 hover:bg-slate-50">Log in</Link><Link to="/signup" className="rounded-xl border border-slate-300 px-5 py-3 text-center font-semibold text-slate-800 hover:bg-slate-50">Create account</Link></div></div><p className="mt-8 flex items-center gap-2 text-sm text-slate-500"><HeartHandshake size={17}/>Built with community knowledge.</p></section></main>
+import { Link } from "react-router-dom";
+import { Accessibility, LogIn, UserPlus } from "lucide-react";
+
+function AuthChoice() {
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+          <div className="mx-auto mb-6 w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+            <Accessibility className="w-8 h-8 text-blue-600" />
+          </div>
+
+          <h1 className="text-3xl font-bold text-slate-900">
+            AccessiNav
+          </h1>
+
+          <p className="mt-3 text-slate-600">
+            Accessible transit navigation for everyone.
+          </p>
+
+          <div className="mt-8 space-y-3">
+            <Link
+              to="/login"
+              className="flex items-center justify-center gap-2 w-full rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700"
+            >
+              <LogIn size={20} />
+              Login
+            </Link>
+
+            <Link
+              to="/signup"
+              className="flex items-center justify-center gap-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-700 font-medium hover:bg-slate-50"
+            >
+              <UserPlus size={20} />
+              Create Account
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
+
+export default AuthChoice;

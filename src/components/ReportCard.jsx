@@ -1,33 +1,13 @@
-export default function ReportCard({ report, onUpvote }) {
-  const badge =
-    report.verified_by_type === "ngo"
-      ? "NGO Verified"
-      : report.verified_by_type === "volunteer"
-      ? "Volunteer Verified"
-      : "User Report";
+﻿import { useState } from "react";
+import { CalendarDays, CheckCircle2, ChevronDown, ChevronUp, MapPin, ThumbsUp, TriangleAlert } from "lucide-react";
 
-  return (
-    <div className="rounded-2xl border bg-white p-4">
-      <div className="flex items-center justify-between">
-        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs">
-          {badge}
-        </span>
-
-        <span className="text-sm text-gray-500">
-          {report.upvotes} 👍
-        </span>
-      </div>
-
-      <p className="mt-3 text-sm">
-        {report.description}
-      </p>
-
-      <button
-        onClick={() => onUpvote?.(report.id)}
-        className="mt-3 text-sm font-medium text-blue-600"
-      >
-        Upvote
-      </button>
-    </div>
-  );
+export default function ReportCard({ report, onUpvote, onVerify, selectable = false, selected = false, onToggleSelect }) {
+  const [expanded, setExpanded] = useState(false);
+  const status = report.status || (report.verification_status === "verified" ? "Verified" : report.verification_status === "false" || report.verification_status === "rejected" ? "Rejected" : "Pending");
+  const verified = report.verification_status === "verified" || status === "Verified";
+  return <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-wrap items-start justify-between gap-3"><div className="flex items-start gap-3">{selectable && <input type="checkbox" aria-label={"Select report at " + report.location} checked={selected} onChange={() => onToggleSelect?.(report.id)} className="mt-1 size-5 accent-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"/>}<div><span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{report.issueType || "Accessibility report"}</span><h3 className="mt-1 text-lg font-bold text-slate-950">{report.location || "Location not provided"}</h3></div></div><span className={"inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold " + (verified ? "bg-emerald-50 text-emerald-900" : status === "Rejected" ? "bg-red-50 text-red-900" : "bg-amber-50 text-amber-950")}>{verified ? <CheckCircle2 size={14}/> : <TriangleAlert size={14}/ >}{status}</span></div><p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-700">{report.description}</p>
+    <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium">{report.severity && report.severity !== "Not specified" && <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-950">{report.severity} severity</span>}{report.category && report.category !== "General accessibility" && <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-900">{report.category}</span>}{report.report_source && <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Source: {report.report_source}</span>}</div>
+    {expanded && <div className="mt-4 grid gap-2 border-t border-slate-100 pt-4 text-sm text-slate-600 sm:grid-cols-2"><p><MapPin size={15} className="mr-1 inline"/>{report.latitude != null && report.longitude != null ? report.latitude + ", " + report.longitude : report.location || "Location not provided"}</p><p><CalendarDays size={15} className="mr-1 inline"/>{report.date || "Date not available"}</p>{report.verified_by_name && <p className="sm:col-span-2">Verified by {report.verified_by_name}{report.verified_by_type ? " · " + report.verified_by_type : ""}</p>}<p>{report.upvotes ?? report.votes ?? 0} upvotes</p></div>}
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4"><span className="text-xs text-slate-500"><CalendarDays size={15} className="mr-1 inline"/>{report.date || "Recently reported"}</span><div className="flex flex-wrap gap-2">{onUpvote && <button type="button" onClick={() => onUpvote(report.id)} className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700"><ThumbsUp size={15}/>{report.upvotes ?? report.votes ?? 0} Upvote</button>}{onVerify && !verified && status !== "Rejected" && <><button type="button" onClick={() => onVerify(report.id, "verified")} className="min-h-10 rounded-lg border border-blue-700 px-3 text-sm font-semibold text-blue-800 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700">Verify</button><button type="button" onClick={() => onVerify(report.id, "false")} className="min-h-10 rounded-lg border border-red-700 px-3 text-sm font-semibold text-red-800 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-700">Mark false</button></>}{selectable && onToggleSelect && !verified && <span className="self-center text-xs font-medium text-slate-500">Select for bulk verification</span>}<button type="button" aria-expanded={expanded} onClick={() => setExpanded(!expanded)} className="inline-flex min-h-10 items-center gap-1 rounded-lg px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700">{expanded ? "Less" : "Details"}{expanded ? <ChevronUp size={15}/> : <ChevronDown size={15}/>}</button></div></div>
+  </article>;
 }

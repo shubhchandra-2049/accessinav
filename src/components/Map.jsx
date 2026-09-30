@@ -1,4 +1,28 @@
-﻿import { MapPin } from 'lucide-react'
-export default function Map({ className = '', title = 'Map preview' }) {
- return <section aria-label={title} className={'relative isolate min-h-64 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 ' + className}><svg aria-hidden="true" viewBox="0 0 800 420" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full"><rect width="800" height="420" fill="#eef4f1" /><path d="M-20 80 820 320M-20 355 820 95M135 -20l175 460M510 -20 350 440M650-20 790 440" stroke="white" strokeWidth="24" /><path d="M-20 80 820 320M-20 355 820 95M135 -20l175 460M510 -20 350 440M650-20 790 440" stroke="#d4e0da" strokeWidth="2" /><path d="M90 300C210 260 210 150 350 180s140 120 250 25 130-40 190-60" fill="none" stroke="#2563eb" strokeWidth="8" strokeLinecap="round" strokeDasharray="2 16" /><circle cx="90" cy="300" r="12" fill="#1d4ed8" stroke="white" strokeWidth="5" /><circle cx="790" cy="145" r="12" fill="#1d4ed8" stroke="white" strokeWidth="5" /><g fill="#d9eadc"><rect x="25" y="18" width="72" height="38" rx="8"/><rect x="395" y="325" width="102" height="48" rx="8"/><rect x="680" y="250" width="82" height="44" rx="8"/></g></svg><div className="absolute inset-x-4 bottom-4 mx-auto flex max-w-max items-center gap-2 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 text-sm font-semibold text-slate-700 shadow-md"><MapPin size={17} className="text-blue-700" aria-hidden="true" />Interactive map will appear here</div></section>
+﻿import { Accessibility, MapPin } from "lucide-react";
+
+function geometryPath(geometry) {
+  const coordinates = geometry?.type === "LineString" ? geometry.coordinates : [];
+  if (!Array.isArray(coordinates) || coordinates.length < 2) return null;
+  const longitudes = coordinates.map(point => point[0]);
+  const latitudes = coordinates.map(point => point[1]);
+  const minLon = Math.min(...longitudes), maxLon = Math.max(...longitudes);
+  const minLat = Math.min(...latitudes), maxLat = Math.max(...latitudes);
+  const width = maxLon - minLon || 1;
+  const height = maxLat - minLat || 1;
+  const points = coordinates.map(([lon, lat]) => [40 + ((lon - minLon) / width) * 720, 375 - ((lat - minLat) / height) * 330]);
+  return { path: points.map(([x, y], index) => (index ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1)).join(" "), start: points[0], end: points[points.length - 1] };
+}
+
+export default function Map({ className = "", search, selectedRoute }) {
+  const origin = search?.origin || "Choose an origin";
+  const destination = search?.destination || "Choose a destination";
+  const route = geometryPath(selectedRoute?.geometry);
+  const source = selectedRoute?.realtime_updates?.source === "schedule" ? "Schedule" : selectedRoute?.realtime_updates?.source === "estimate" ? "Estimate" : null;
+
+  return <section aria-label="Route geometry preview" className={"relative isolate min-h-72 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 " + className}>
+    <svg aria-hidden="true" viewBox="0 0 800 420" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full"><rect width="800" height="420" fill="#f1f5f9"/>{route && <><path d={route.path} fill="none" stroke="#2563eb" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/><circle cx={route.start[0]} cy={route.start[1]} r="12" fill="#1d4ed8" stroke="white" strokeWidth="5"/><circle cx={route.end[0]} cy={route.end[1]} r="12" fill="#047857" stroke="white" strokeWidth="5"/></>}</svg>
+    <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2"><div className="max-w-[45%] rounded-xl border bg-white/95 p-3 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Origin</p><p className="mt-1 truncate text-sm font-semibold text-slate-900">{origin}</p></div><div className="max-w-[45%] rounded-xl border bg-white/95 p-3 text-right shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Destination</p><p className="mt-1 truncate text-sm font-semibold text-slate-900">{destination}</p></div></div>
+    <div className="absolute inset-x-3 bottom-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-md"><span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800"><MapPin size={16} className="text-blue-700"/>{selectedRoute ? selectedRoute.mode : "Select a route"}</span>{selectedRoute && <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-900"><Accessibility size={15}/>{selectedRoute.duration}{source ? " · Source: " + source : ""}</span>}</div>
+    {!route && <p className="absolute left-4 right-4 top-1/2 -translate-y-1/2 rounded-xl bg-white/90 p-4 text-center text-sm text-slate-600">{selectedRoute ? "The route service did not provide geometry for this route." : "Route geometry will appear here when provided by the service."}</p>}
+  </section>;
 }

@@ -1,3 +1,48 @@
-﻿import { Link } from 'react-router-dom'
-import Header from '../components/Header.jsx'
-export default function SignUp() { return <><Header/><main className="mx-auto max-w-lg px-4 py-12"><h1 className="text-3xl font-bold text-slate-950">Join AccessiNav</h1><p className="mt-2 text-slate-600">Create an account to contribute and save your preferences.</p><form className="mt-7 grid gap-4 rounded-2xl border border-slate-200 bg-white p-6"><label className="grid gap-2 text-sm font-semibold">Name<input autoComplete="name" className="min-h-11 rounded-lg border px-3 font-normal focus-visible:outline-2 focus-visible:outline-blue-700"/></label><label className="grid gap-2 text-sm font-semibold">Email<input type="email" autoComplete="email" className="min-h-11 rounded-lg border px-3 font-normal focus-visible:outline-2 focus-visible:outline-blue-700"/></label><label className="grid gap-2 text-sm font-semibold">Password<input type="password" autoComplete="new-password" className="min-h-11 rounded-lg border px-3 font-normal focus-visible:outline-2 focus-visible:outline-blue-700"/></label><button type="button" className="min-h-11 rounded-xl bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800">Create account</button><p className="text-sm text-slate-600">Demo form only. <Link to="/login" className="font-semibold text-blue-800">Log in</Link></p></form></main></> }
+﻿import { useState } from "react";
+import { LoaderCircle, UserPlus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import Header from "../components/Header.jsx";
+import { signup } from "../lib/api.js";
+import { setCurrentUser } from "../lib/auth.js";
+
+export default function SignUp() {
+  const navigate = useNavigate();
+  const [values, setValues] = useState({ name: "", email: "", password: "", confirmPassword: "", role: "rider" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  function update(key, value) { setValues(previous => ({ ...previous, [key]: value })); }
+
+  async function submit(event) {
+    event.preventDefault();
+    setError("");
+    if (!values.name.trim() || !values.email.trim() || !values.password || !values.confirmPassword) {
+      setError("Complete all fields before creating your account.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    if (values.password.length < 8) {
+      setError("Choose a password with at least 8 characters.");
+      return;
+    }
+    if (values.password !== values.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const authResponse = await signup(values);
+      setCurrentUser(authResponse);
+      navigate("/home", { replace: true });
+    } catch (requestError) {
+      setError(requestError.message || "Account creation failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return <><Header/><main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-slate-50 px-4 py-10"><form onSubmit={submit} noValidate className="grid w-full max-w-lg gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"><h1 className="text-3xl font-bold text-slate-950">Create your AccessiNav account</h1><p className="text-slate-600">Join the community and plan more accessible journeys.</p><label className="grid gap-2 text-sm font-semibold">Name<input required autoComplete="name" value={values.name} onChange={event => update("name", event.target.value)} className="min-h-12 rounded-lg border border-slate-300 px-3 font-normal focus-visible:outline-2 focus-visible:outline-blue-700"/></label><label className="grid gap-2 text-sm font-semibold">Email<input required type="email" autoComplete="email" value={values.email} onChange={event => update("email", event.target.value)} className="min-h-12 rounded-lg border border-slate-300 px-3 font-normal focus-visible:outline-2 focus-visible:outline-blue-700"/></label><label className="grid gap-2 text-sm font-semibold">Account type<select value={values.role} onChange={event => update("role", event.target.value)} className="min-h-12 rounded-lg border border-slate-300 bg-white px-3 font-normal focus-visible:outline-2 focus-visible:outline-blue-700"><option value="rider">Rider</option><option value="volunteer">Volunteer</option><option value="ngo">Organization partner</option></select></label><label className="grid gap-2 text-sm font-semibold">Password<input required minLength={8} type="password" autoComplete="new-password" value={values.password} onChange={event => update("password", event.target.value)} className="min-h-12 rounded-lg border border-slate-300 px-3 font-normal focus-visible:outline-2 focus-visible:outline-blue-700"/></label><label className="grid gap-2 text-sm font-semibold">Confirm password<input required type="password" autoComplete="new-password" value={values.confirmPassword} onChange={event => update("confirmPassword", event.target.value)} className="min-h-12 rounded-lg border border-slate-300 px-3 font-normal focus-visible:outline-2 focus-visible:outline-blue-700"/></label>{error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-900">{error}</p>}<button disabled={loading} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-60">{loading ? <><LoaderCircle className="animate-spin" size={18}/>Creating account…</> : <><UserPlus size={18}/>Create account</>}</button><p className="text-center text-sm text-slate-600">Already have an account? <Link to="/login" className="font-semibold text-blue-800 hover:underline">Log in</Link></p></form></main></>;
+}
