@@ -1,7 +1,38 @@
-﻿import { ArrowUpRight, Bus, CheckCircle2, Clock3, Footprints, MapPin, TriangleAlert } from 'lucide-react'
-export default function RouteCard({ route, name, transportType, estimatedTime, distance, accessibilityStatus, warnings = [], onSelect = () => {}, selected = false }) {
- const data = route || { name, transportType, estimatedTime, distance, accessibilityStatus, warnings }
- const accessible = data.accessibilityStatus?.toLowerCase() === 'accessible'
- const Mode = data.transportType?.toLowerCase().includes('bus') ? Bus : Footprints
- return <article className={'rounded-2xl border bg-white p-5 shadow-sm hover:shadow-md ' + (selected ? 'border-blue-600 ring-2 ring-blue-100' : 'border-slate-200')}><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{data.transportType}</p><h3 className="mt-1 text-lg font-bold text-slate-900">{data.name}</h3></div><span className={'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ' + (accessible ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-900')}>{accessible ? <CheckCircle2 size={15} /> : <TriangleAlert size={15} />}{data.accessibilityStatus}</span></div><div className="mt-4 flex flex-wrap gap-5 text-sm text-slate-600"><span className="inline-flex items-center gap-1.5"><Mode size={16} />{data.transportType}</span><span className="inline-flex items-center gap-1.5"><Clock3 size={16} />{data.estimatedTime}</span><span className="inline-flex items-center gap-1.5"><MapPin size={16} />{data.distance}</span></div>{data.warnings?.length > 0 && <ul className="mt-4 grid gap-2 border-t border-slate-100 pt-3">{data.warnings.map(w => <li key={w} className="flex items-start gap-2 text-sm text-amber-900"><TriangleAlert size={16} />{w}</li>)}</ul>}<button type="button" onClick={() => onSelect(data)} className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">{selected ? 'Selected route' : 'View this route'}<ArrowUpRight size={17} /></button></article>
+export default function RouteCard({ route, onSelect }) {
+  return (
+    <button
+      onClick={() => onSelect?.(route)}
+      className="w-full rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm"
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold">{route.mode}</h3>
+          <p className="text-sm text-gray-500">
+            {route.distance}
+          </p>
+        </div>
+
+        <div className="text-right">
+          <p className="font-bold">{route.duration}</p>
+          <p className="text-sm text-green-600">
+            ♿ Accessible
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex gap-4 text-sm text-gray-600">
+        <span>{route.steps} steps</span>
+        <span>{route.stops} stops</span>
+        <span>
+          {route.realtime_updates.next_arrival}
+        </span>
+      </div>
+
+      {route.realtime_updates.delay_min > 0 && (
+        <div className="mt-3 rounded-lg bg-yellow-50 p-2 text-sm text-yellow-700">
+          {route.realtime_updates.delay_min} min delay
+        </div>
+      )}
+    </button>
+  );
 }
