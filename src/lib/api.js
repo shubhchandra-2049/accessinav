@@ -31,7 +31,7 @@ function unwrapList(payload, ...keys) { if (Array.isArray(payload)) return paylo
 function normalizeAuth(payload, fallbackName) {
   const response = payload?.user ? { ...payload.user, token: payload.token || payload.user.token } : payload;
   if (!response?.token || !response?.user_id) throw new Error("The server returned an incomplete authentication response.");
-  return { token: response.token, user_id: response.user_id, id: response.user_id, email: response.email, user_type: response.user_type, role: response.user_type === "user" ? "rider" : response.user_type, name: response.name || response.organization_name || fallbackName || response.email?.split("@")[0] };
+  return { token: response.token, user_id: response.user_id, id: response.user_id, email: response.email, user_type: response.user_type, role: response.user_type, name: response.name || response.organization_name || fallbackName || response.email?.split("@")[0] };
 }
 function coordinatePair(value, latitude, longitude, label) {
   if (typeof value === "string" && value.includes(",")) { const [lat, lon] = value.split(",").map(Number); if (Number.isFinite(lat) && Number.isFinite(lon)) return lat + "," + lon; }
@@ -52,7 +52,7 @@ function normalizeReport(report) {
 }
 export async function login(credentials) { return normalizeAuth(await request("/auth/login", { method: "POST", body: credentials, authRequest: true })); }
 export async function signup(values) {
-  const payload = await request("/auth/register", { method: "POST", authRequest: true, body: { name: values.name.trim(), email: values.email.trim().toLowerCase(), password: values.password, user_type: values.role === "rider" ? "user" : values.role, organization_name: values.role === "ngo" ? values.organizationName?.trim() || values.name.trim() : null } });
+  const payload = await request("/auth/register", { method: "POST", authRequest: true, body: { name: values.name.trim(), email: values.email.trim().toLowerCase(), password: values.password, user_type: values.role, organization_name: values.role === "ngo" ? values.organizationName?.trim() || values.name.trim() : null } });
   return normalizeAuth(payload, values.name.trim());
 }
 export async function getRoutes(search) {
@@ -70,7 +70,6 @@ export async function verifyReport(id, verificationStatus = "verified") { return
 export async function bulkVerifyReports(reportIds, verificationStatus = "verified") { return request("/reports/bulk-verify", { method: "POST", body: { report_ids: reportIds, verification_status: verificationStatus } }); }
 export async function getPendingReports() { const payload = await request("/dashboard/pending-reports", { protectedRead: true }); return unwrapList(payload, "reports", "pending_reports").map(normalizeReport); }
 export async function getVerifiedReports() { const payload = await request("/dashboard/verified", { protectedRead: true }); return unwrapList(payload, "reports", "verified_reports").map(normalizeReport); }
-export async function getLeaderboard() { return unwrapList(await request("/dashboard/leaderboard"), "leaderboard", "users"); }
 export async function getSosAlerts() { return unwrapList(await request("/sos", { protectedRead: true }), "sos", "alerts", "requests"); }
 export async function sendSOS({ latitude, longitude }) { return request("/sos", { method: "POST", body: { latitude: Number(latitude), longitude: Number(longitude) } }); }
 export async function resolveSOS(id) { return request("/sos/" + encodeURIComponent(id) + "/resolve", { method: "POST" }); }

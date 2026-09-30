@@ -8,7 +8,7 @@ function notifyAuthChanged() {
 function normalizeUser(rawUser) {
   if (!rawUser) return null;
   const userType = rawUser.user_type || rawUser.userType || rawUser.role;
-  const role = userType === "user" || userType === "rider" ? "rider" : userType;
+  const role = userType === "rider" ? "user" : userType; // "rider" = legacy stored sessions
   return { id: rawUser.user_id || rawUser.id, user_id: rawUser.user_id || rawUser.id, email: rawUser.email, name: rawUser.name || rawUser.organization_name || rawUser.email?.split("@")[0] || "AccessiNav user", role, user_type: userType };
 }
 

@@ -20,6 +20,9 @@ async function lookupPlace(place) {
     url.searchParams.set("format", "jsonv2");
     url.searchParams.set("limit", "1");
     url.searchParams.set("q", place.trim());
+    url.searchParams.set("countrycodes", "in");
+    url.searchParams.set("viewbox", "80.0,13.3,80.4,12.8"); // Chennai (fallback when no suggestion was picked)
+    url.searchParams.set("bounded", "1");
 
     let response;
     try {

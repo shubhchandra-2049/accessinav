@@ -6,7 +6,7 @@ import RouteCard from "../components/RouteCard.jsx";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
 import ErrorToast from "../components/ErrorToast.jsx";
 import { EmptyState, SuccessMessage } from "../lib/messages.jsx";
-import { getRoutes } from "../lib/api.js";
+import { getReports, getRoutes } from "../lib/api.js";
 
 export default function Results() {
   const location = useLocation();
@@ -18,6 +18,7 @@ export default function Results() {
   const [loading, setLoading] = useState(Boolean(origin && destination));
   const [loadError, setLoadError] = useState("");
   const [selected, setSelected] = useState(null);
+  const [reports, setReports] = useState([]);
 
   useEffect(() => {
     if (!origin || !destination) return undefined;
@@ -29,6 +30,15 @@ export default function Results() {
     return () => { live = false; };
   }, [origin, destination, disability, search]);
 
+  // Community reports near the start point, shown as map markers (best effort: failures are ignored)
+  const startLat = search?.start?.latitude, startLon = search?.start?.longitude;
+  useEffect(() => {
+    if (!Number.isFinite(Number(startLat)) || !Number.isFinite(Number(startLon))) return undefined;
+    let live = true;
+    getReports({ lat: startLat, lon: startLon }).then(items => { if (live) setReports(items); }).catch(() => {});
+    return () => { live = false; };
+  }, [startLat, startLon]);
+
   const missingSearch = !origin || !destination;
   const error = missingSearch ? "Your search details are missing. Please start a new search." : loadError;
 
@@ -38,7 +48,7 @@ export default function Results() {
     {selected && !loading && <div className="mt-5"><SuccessMessage title="Route selected">{selected.mode} is shown in the route preview.</SuccessMessage></div>}
     <div className="mt-7 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]"><section aria-label="Available routes" className="grid gap-4">
       {loading ? <div className="rounded-2xl border bg-white p-8"><LoadingSpinner label="Finding accessible routes…"/></div> : error ? <EmptyState title="Could not load routes">{error}<div className="mt-4"><Link to="/search" state={{ search }} className="font-semibold text-blue-800">Try a new search</Link></div></EmptyState> : routes.length === 0 ? <EmptyState title="No routes found">Try another destination or accessibility preference.</EmptyState> : routes.map(route => <RouteCard key={route.id} route={route} selected={selected?.id === route.id} onSelect={setSelected}/>)}
-    </section><div className="lg:sticky lg:top-24"><Map className="min-h-96" search={search} selectedRoute={selected}/></div></div>
+    </section><div className="lg:sticky lg:top-24"><Map className="min-h-96" search={search} routes={routes} reports={reports} selectedRoute={selected}/></div></div>
   </main><ErrorToast message={loadError} onClose={() => setLoadError("")}/></>;
 }
 
