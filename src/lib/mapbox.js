@@ -14,6 +14,21 @@ function matchStations(query) {
     .map(s => ({ id: "cmrl:" + s.name, name: s.name.replace(/^Puratchi Thalaivar Dr\. M\.G\. Ramachandran Central$/, "Chennai Central"), detail: "CMRL Metro station", latitude: s.latitude, longitude: s.longitude, type: "metro" }));
 }
 
+/** Name for a coordinate (e.g. the device location); null if unavailable. */
+export async function reverseGeocode(latitude, longitude) {
+  if (!MAPBOX_TOKEN) return null;
+  try {
+    const url = new URL("https://api.mapbox.com/geocoding/v5/mapbox.places/" + longitude + "," + latitude + ".json");
+    url.search = new URLSearchParams({ access_token: MAPBOX_TOKEN, types: "poi,address,neighborhood,locality", limit: "1" });
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const feature = (await response.json()).features?.[0];
+    return feature ? feature.text + (feature.context?.[0]?.text ? ", " + feature.context[0].text : "") : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Suggest places in Chennai: CMRL Metro stations first (Mapbox does not know them),
  * then Mapbox Geocoding results (localities, neighbourhoods, POIs, addresses).

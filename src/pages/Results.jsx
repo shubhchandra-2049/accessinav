@@ -43,7 +43,7 @@ export default function Results() {
   const error = missingSearch ? "Your search details are missing. Please start a new search." : loadError;
 
   return <><Header/><main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-    <Link to="/search" state={{ search }} className="text-sm font-semibold text-blue-800 hover:underline">← Edit route search</Link>
+    <div className="flex flex-wrap items-center justify-between gap-3"><Link to="/search" state={{ search }} className="text-sm font-semibold text-blue-800 hover:underline">← Edit route search</Link>{Number.isFinite(Number(search?.end?.latitude)) && <Link to="/report" state={{ place: { name: destination, latitude: search.end.latitude, longitude: search.end.longitude } }} className="inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-800 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700">Report an issue near {destination}</Link>}</div>
     <div className="mt-5"><p className="text-sm font-semibold uppercase tracking-wide text-blue-800">Live route results</p><h1 className="mt-2 text-3xl font-bold text-slate-950">Routes to {destination || "your destination"}</h1><p className="mt-2 text-slate-600">From {origin || "your origin"} · preference: {disability || "not selected"}</p></div>
     {selected && !loading && <div className="mt-5"><SuccessMessage title="Route selected">{selected.mode} is shown in the route preview.</SuccessMessage></div>}
     <div className="mt-7 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]"><section aria-label="Available routes" className="grid gap-4">
