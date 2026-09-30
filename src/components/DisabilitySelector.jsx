@@ -1,0 +1,7 @@
+﻿import { Check } from 'lucide-react'
+import { DISABILITIES } from '../lib/constants.js'
+export default function DisabilitySelector({ value = [], onChange = () => {}, options = DISABILITIES, label = 'Accessibility preferences' }) {
+ const selected = Array.isArray(value) ? value : value ? [value] : []
+ const toggle = id => onChange(selected.includes(id) ? selected.filter(item => item !== id) : [...selected, id])
+ return <fieldset><legend className="text-sm font-semibold text-slate-900">{label}</legend><p className="mt-1 text-sm text-slate-500">Choose any needs for routes to consider.</p><div className="mt-3 grid gap-2 sm:grid-cols-2">{options.map(item => { const active = selected.includes(item.id); return <label key={item.id} className={'flex cursor-pointer items-start gap-3 rounded-xl border p-3 focus-within:outline-2 focus-within:outline-blue-700 ' + (active ? 'border-blue-600 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-400')}><input className="sr-only" type="checkbox" checked={active} onChange={() => toggle(item.id)} /><span aria-hidden="true" className={'mt-0.5 grid size-5 shrink-0 place-items-center rounded border ' + (active ? 'border-blue-700 bg-blue-700 text-white' : 'border-slate-400 bg-white text-transparent')}><Check size={14} /></span><span><span className="block text-sm font-semibold text-slate-900">{item.label}</span><span className="mt-0.5 block text-xs leading-5 text-slate-600">{item.description}</span></span></label> })}</div></fieldset>
+}
