@@ -7,6 +7,7 @@ import LocationAutocomplete from "../components/LocationAutocomplete.jsx";
 import { createReport } from "../lib/api.js";
 import { reverseGeocode } from "../lib/mapbox.js";
 import { ACCESSIBILITY_OPTIONS } from "../lib/constants.js";
+import { useDisability } from "../context/useDisability.js";
 import { SuccessMessage } from "../lib/messages.jsx";
 const ISSUE_TYPES = [
  { label: "Mobility Issues", options: ["Missing or broken ramp", "Steps/stairs with no alternative", "Broken elevator or escalator", "Narrow/blocked passage", "Broken or missing accessible toilet", "No accessible seating/space"] },
@@ -14,10 +15,14 @@ const ISSUE_TYPES = [
  { label: "Hearing Accessibility", options: ["No visual announcements", "No flashing/visual alerts"] },
  { label: "General Transit", options: ["Unclean platform/station", "Overcrowded/congestion", "Broken ticket machine", "Security/safety concern", "✅ Accessible feature (working well!)", "Other barrier"] }
 ];
-const initial = { location: "", issueType: ISSUE_TYPES[0].options[0], description: "", severity: "Medium", category: "" };
+// The issue type pre-selected for each accessibility profile (still changeable).
+const PROFILE_ISSUE = { wheelchair: "Missing or broken ramp", cognitive: "Confusing or missing signage", hearing_impaired: "No visual announcements", visually_impaired: "Missing tactile paving (guide blocks)" };
+const makeInitial = profileId => ({ location: "", issueType: PROFILE_ISSUE[profileId] || ISSUE_TYPES[0].options[0], description: "", severity: "Medium", category: "" });
 const GEO_ERRORS = { 1: "Location permission is blocked. Search for a place instead, or allow location access in your browser settings.", 2: "Your device could not determine its location. Search for a place instead.", 3: "Finding your location took too long. Try again or search for a place." };
 export default function ReportForm() {
  const routeState = useLocation().state;
+ const { selectedProfile } = useDisability();
+ const initial = makeInitial(selectedProfile);
  const [values, setValues] = useState(() => ({ ...initial, location: routeState?.place?.name || "" }));
  const [place, setPlace] = useState(() => { const p = routeState?.place; return p && Number.isFinite(Number(p.latitude)) && Number.isFinite(Number(p.longitude)) ? { name: p.name, latitude: Number(p.latitude), longitude: Number(p.longitude) } : null; });
  const [locating, setLocating] = useState(false), [loading, setLoading] = useState(false), [error, setError] = useState(""), [submittedReport, setSubmittedReport] = useState(null);

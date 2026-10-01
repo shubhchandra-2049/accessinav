@@ -3,11 +3,14 @@ import { CheckCircle2, LoaderCircle, Radio, Siren, X } from "lucide-react";
 import { cancelSOS, sendSOS, updateSOSLocation } from "../lib/api.js";
 import { getAuthToken } from "../lib/auth.js";
 import { vibrate } from "../lib/haptics.js";
+import { speak } from "../lib/speech.js";
+import { useDisability } from "../context/useDisability.js";
 
 const UPDATE_INTERVAL_MS = 5000;
 const MAX_SHARING_MS = 30 * 60 * 1000;
 
 export default function SOSButton() {
+  const { features } = useDisability();
   const dialogRef = useRef(null);
   const watchId = useRef(null);
   const stopTimer = useRef(null);
@@ -54,6 +57,7 @@ export default function SOSButton() {
       const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, () => reject(new Error("Could not read your location. Allow location access and try again.")), { enableHighAccuracy: true, timeout: 10000 }));
       const result = await sendSOS({ latitude: position.coords.latitude, longitude: position.coords.longitude });
       vibrate("sosSent");
+      if (features.speech) speak("SOS sent. Your location is being shared.");
       setMessage("Your SOS was sent to AccessiNav. Your location is shared live until you stop it or someone resolves your alert.");
       if (result?.alert_id) startSharing(result.alert_id);
     } catch (requestError) {

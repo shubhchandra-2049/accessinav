@@ -1,14 +1,19 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp, Clock3, MapPin, TriangleAlert, MoveUpRight } from "lucide-react";
+import RouteSteps from "./RouteSteps.jsx";
+import { useDisability } from "../context/useDisability.js";
 
-export default function RouteCard({ route, onSelect = () => {}, selected = false }) {
+export default function RouteCard({ route, destination = "", onSelect = () => {}, selected = false }) {
   const [expanded, setExpanded] = useState(false);
+  const { features } = useDisability();
   const source = route.realtime_updates?.source;
   const sourceLabel = source === "schedule" ? "Schedule" : source === "estimate" ? "Estimate" : "Not provided";
   return <article className={"rounded-2xl border bg-white p-5 shadow-sm transition " + (selected ? "border-blue-600 ring-2 ring-blue-100" : "border-slate-200")}>
     <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{route.mode}</p><h2 className="mt-1 text-lg font-bold text-slate-950">{route.name || route.mode || "Accessible route"}</h2></div><span className={"inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold " + (route.accessible ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950")}>{route.accessible ? <CheckCircle2 size={15}/> : <TriangleAlert size={15}/ >}{route.accessible ? "Accessible" : "Not marked accessible"}</span></div>
     <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-600"><span className="inline-flex items-center gap-1.5"><Clock3 size={16}/>{route.duration}</span><span className="inline-flex items-center gap-1.5"><MapPin size={16}/>{route.distance}</span>{Number.isFinite(route.steps) && <span>{route.steps} steps</span>}{Number.isFinite(route.stops) && <span>{route.stops} stops</span>}</div>
+    {features.stepFree && route.steps === 0 && <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-900"><CheckCircle2 size={14} aria-hidden="true"/>Step-free route</p>}
     {route.via && <p className="mt-3 text-sm leading-5 text-slate-600">Via {route.via}</p>}
+    {features.steps && <RouteSteps route={route} destination={destination}/>}
     <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-900">Realtime source: {sourceLabel}{route.realtime_updates?.next_arrival ? " · Next arrival " + route.realtime_updates.next_arrival : ""}</p>
     {route.warnings?.length > 0 && <ul className="mt-4 grid gap-2 border-t border-slate-100 pt-3">{route.warnings.map(warning => <li key={warning} className="flex items-start gap-2 text-sm leading-5 text-amber-950"><TriangleAlert className="mt-0.5 shrink-0" size={16}/>{warning}</li>)}</ul>}
     {expanded && <div className="mt-4 grid gap-2 rounded-xl bg-slate-50 p-4 text-sm text-slate-700 sm:grid-cols-2"><p>Mode: <strong>{route.mode}</strong></p><p>Duration: <strong>{route.duration}</strong></p><p>Distance: <strong>{route.distance}</strong></p><p>Accessibility: <strong>{route.accessible ? "Accessible" : "Not marked accessible"}</strong></p><p>Realtime source: <strong>{sourceLabel}</strong></p>{route.realtime_updates?.delay_min != null && <p>Delay: <strong>{route.realtime_updates.delay_min} min</strong></p>}{route.via && <p className="sm:col-span-2">Via: <strong>{route.via}</strong></p>}</div>}

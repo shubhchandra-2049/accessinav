@@ -1,4 +1,4 @@
-﻿import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import AuthChoice from "./pages/AuthChoice";
 import Login from "./pages/Login";
@@ -9,21 +9,32 @@ import Results from "./pages/Results";
 import ReportForm from "./pages/ReportForm";
 import VolunteerDashboard from "./pages/VolunteerDashboard";
 import NgoDashboard from "./pages/NgoDashboard";
+import Settings from "./pages/Settings";
+import DisabilitySelectorPage from "./pages/DisabilitySelectorPage";
+import RequireProfile from "./components/RequireProfile";
+import { DisabilityProvider } from "./context/DisabilityContext.jsx";
+
+// Pages for logged-in users: first-time users are sent to the profile selector before reaching them.
+const guarded = element => <RequireProfile>{element}</RequireProfile>;
 
 function App() {
   return (
+    <DisabilityProvider>
     <Routes>
       <Route path="/" element={<AuthChoice />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="/search" element={<Search />} />
-      <Route path="/results" element={<Results />} />
-      <Route path="/report" element={<ReportForm />} />
-      <Route path="/volunteer" element={<VolunteerDashboard />} />
-      <Route path="/ngo" element={<NgoDashboard />} />
+      <Route path="/select-disability" element={<DisabilitySelectorPage />} />
+      <Route path="/home" element={guarded(<Home />)} />
+      <Route path="/search" element={guarded(<Search />)} />
+      <Route path="/results" element={guarded(<Results />)} />
+      <Route path="/report" element={guarded(<ReportForm />)} />
+      <Route path="/volunteer" element={guarded(<VolunteerDashboard />)} />
+      <Route path="/ngo" element={guarded(<NgoDashboard />)} />
+      <Route path="/settings" element={<Settings />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </DisabilityProvider>
   );
 }
 

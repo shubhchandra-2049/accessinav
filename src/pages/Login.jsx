@@ -29,7 +29,9 @@ function Login() {
     try {
       const authResponse = await login({ email: normalizedEmail, password });
       setCurrentUser(authResponse);
-      navigate("/home", { replace: true });
+      // The account's saved profile decides the next page: none yet -> first-time setup, otherwise Home.
+      // (null = account has not chosen; undefined = backend without profile storage, so let the route guard decide)
+      navigate(authResponse.disability_profile === null ? "/select-disability" : "/home", { replace: true });
     } catch (requestError) {
       setError(requestError.message || "Login failed. Check your details and try again.");
     } finally {

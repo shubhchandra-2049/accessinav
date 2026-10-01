@@ -38,7 +38,8 @@ export default function SignUp() {
     try {
       const authResponse = await signup(values);
       setCurrentUser(authResponse);
-      navigate("/home", { replace: true });
+      // A brand-new account has no profile yet: first-time setup (the route guard also covers older backends).
+      navigate(authResponse.disability_profile ? "/home" : "/select-disability", { replace: true });
     } catch (requestError) {
       setError(requestError.message || "Account creation failed. Please try again.");
     } finally {

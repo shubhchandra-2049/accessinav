@@ -31,7 +31,7 @@ function unwrapList(payload, ...keys) { if (Array.isArray(payload)) return paylo
 function normalizeAuth(payload, fallbackName) {
   const response = payload?.user ? { ...payload.user, token: payload.token || payload.user.token } : payload;
   if (!response?.token || !response?.user_id) throw new Error("The server returned an incomplete authentication response.");
-  return { token: response.token, user_id: response.user_id, id: response.user_id, email: response.email, user_type: response.user_type, role: response.user_type, name: response.name || response.organization_name || fallbackName || response.email?.split("@")[0] };
+  return { token: response.token, user_id: response.user_id, id: response.user_id, email: response.email, user_type: response.user_type, role: response.user_type, disability_profile: response.disability_profile, name: response.name || response.organization_name || fallbackName || response.email?.split("@")[0] };
 }
 function coordinatePair(value, latitude, longitude, label) {
   if (typeof value === "string" && value.includes(",")) { const [lat, lon] = value.split(",").map(Number); if (Number.isFinite(lat) && Number.isFinite(lon)) return lat + "," + lon; }
@@ -76,5 +76,6 @@ export async function updateSOSLocation(id, { latitude, longitude }) { return re
 export async function cancelSOS(id) { return request("/sos/" + encodeURIComponent(id) + "/cancel", { method: "POST" }); }
 export async function resolveSOS(id) { return request("/sos/" + encodeURIComponent(id) + "/resolve", { method: "POST" }); }
 export async function getMe() { return request("/auth/me", { protectedRead: true }); }
+export async function saveProfile(profile) { return request("/auth/profile", { method: "PUT", body: { disability_profile: profile } }); }
 export async function getHealth() { return request("/health"); }
 

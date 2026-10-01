@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+/*
+  Accessibility profiles. <html data-profile="..."> is set by DisabilityProvider.
+  These rules are intentionally unlayered so they override Tailwind's layered utility classes.
+  Tailwind sizes are rem-based, so raising the root font size scales the whole interface.
+*/
+html[data-profile="cognitive"] { font-size: 118.75%; }
+html[data-profile="cognitive"] body { line-height: 1.7; }
+
+html[data-profile="visually_impaired"] { font-size: 112.5%; }
+html[data-profile="visually_impaired"] :where(.text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700) { color: #020617; }
+html[data-profile="visually_impaired"] :where(.border-slate-100, .border-slate-200, .border-slate-300) { border-color: #0f172a; }
+html[data-profile="visually_impaired"] :focus-visible { outline: 4px solid #1d4ed8 !important; outline-offset: 3px; }
