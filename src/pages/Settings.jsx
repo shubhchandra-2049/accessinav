@@ -15,7 +15,7 @@ const WHAT_CHANGES = {
 };
 
 export default function Settings() {
-  const { selectedProfile, profile, features } = useDisability();
+  const { selectedProfile, profile, features, voiceEnabled, setVoiceEnabled } = useDisability();
   const [saved, setSaved] = useState("");
   return <><Header/><main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
     <Link to="/home" className="inline-flex items-center gap-1 text-sm font-semibold text-blue-800 hover:underline"><ArrowLeft size={16} aria-hidden="true"/>Home</Link>
@@ -28,6 +28,10 @@ export default function Settings() {
     <section aria-labelledby="what-changes" className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
       <h2 id="what-changes" className="text-lg font-bold text-slate-950">What changes with the {profile.name} profile</h2>
       <ul className="mt-3 grid gap-2 text-slate-700">{WHAT_CHANGES[selectedProfile].map(line => <li key={line} className="flex gap-2"><CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-700" aria-hidden="true"/>{line}</li>)}</ul>
+      {selectedProfile === "visually_impaired" && <div className="mt-5 border-t border-slate-100 pt-4">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 font-semibold text-slate-950"><input type="checkbox" role="switch" checked={voiceEnabled} onChange={event => { setVoiceEnabled(event.target.checked); if (event.target.checked) speak("Voice announcements on."); }} className="size-5 accent-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"/>Voice announcements<span className="font-normal text-slate-600">({voiceEnabled ? "on" : "off"})</span></label>
+        <p className="mt-1 text-sm text-slate-600">Reads page names, button presses, routes, messages and errors aloud, slowly. Turn this off if your screen reader already does this.</p>
+      </div>}
       {(features.haptics || features.speech) && <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-4">
         {features.haptics && <button type="button" onClick={() => vibrate("success")} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 px-4 text-sm font-semibold hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700"><Vibrate size={17} aria-hidden="true"/>Test vibration</button>}
         {features.speech && <button type="button" onClick={() => speak("This is how AccessiNav will read route guidance aloud.")} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 px-4 text-sm font-semibold hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700"><Volume2 size={17} aria-hidden="true"/>Test spoken guidance</button>}

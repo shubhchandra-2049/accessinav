@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { DEFAULT_PROFILE, PROFILES, PROFILE_FREE_PATHS } from "../lib/constants.js";
 import { getMe, saveProfile } from "../lib/api.js";
 import { getCurrentUser } from "../lib/auth.js";
+import { stopSpeaking } from "../lib/speech.js";
 import { DisabilityContext } from "./useDisability.js";
 
 const STORAGE_KEY = "userDisabilityProfile";
@@ -14,6 +15,12 @@ const FEATURES = {
   hearing_impaired: { visualCard: true, haptics: true },
   visually_impaired: { speech: true, haptics: true, buttonHaptics: true, pageAnnounce: true },
 };
+
+const VOICE_KEY = "voiceEnabled";
+// Spoken guidance is ON unless the user muted it (a blind user cannot be expected to find a switch first).
+function readVoiceEnabled() {
+  try { return localStorage.getItem(VOICE_KEY) !== "false"; } catch { return true; }
+}
 
 const isProfileId = value => PROFILES.some(profile => profile.id === value);
 
@@ -37,6 +44,12 @@ export function DisabilityProvider({ children }) {
   const [profileChosen, setChosen] = useState(Boolean(stored));
   const [profileReady, setReady] = useState(() => !getCurrentUser()); // false while syncing a logged-in user
   const hadUser = useRef(Boolean(getCurrentUser()));
+  const [voiceEnabled, setVoice] = useState(readVoiceEnabled);
+  const setVoiceEnabled = useCallback(on => {
+    setVoice(on);
+    try { localStorage.setItem(VOICE_KEY, String(on)); } catch { /* storage unavailable: the choice lasts for this session */ }
+    if (!on) stopSpeaking();
+  }, []);
 
   // <html data-profile> drives the profile themes in index.css. It is removed on the sign-in / sign-up / setup
   // pages, so they always look normal, and set again on every other page.
@@ -86,8 +99,11 @@ export function DisabilityProvider({ children }) {
     chooseProfile,
     setSelectedProfile: chooseProfile,
     profile: PROFILES.find(profile => profile.id === selectedProfile) || PROFILES[0],
-    features: FEATURES[selectedProfile] || {},
-  }), [selectedProfile, profileChosen, profileReady, chooseProfile]);
+    // Muting turns off everything that speaks; vibration is unaffected.
+    features: voiceEnabled ? (FEATURES[selectedProfile] || {}) : { ...(FEATURES[selectedProfile] || {}), speech: false, pageAnnounce: false },
+    voiceEnabled,
+    setVoiceEnabled,
+  }), [selectedProfile, profileChosen, profileReady, chooseProfile, voiceEnabled, setVoiceEnabled]);
 
   return <DisabilityContext.Provider value={value}>{children}</DisabilityContext.Provider>;
 }

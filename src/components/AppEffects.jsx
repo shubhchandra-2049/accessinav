@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useDisability } from "../context/useDisability.js";
 import { speak } from "../lib/speech.js";
@@ -28,10 +28,15 @@ export default function AppEffects() {
 
   // Every page gets a title (for screen readers and browser history); it is spoken for the spoken profile.
   // Results announces itself once its routes load, so it is skipped here.
+  // The name is spoken when the page changes, not when a setting changes (that would cut off other announcements,
+  // e.g. the confirmation when voice is turned back on).
+  const lastPage = useRef("");
   useEffect(() => {
     const title = PAGE_TITLES[pathname] || "AccessiNav";
     document.title = title + " · AccessiNav";
-    if (features.pageAnnounce && pathname !== "/results") speak(title + " page");
+    const changed = lastPage.current !== pathname;
+    lastPage.current = pathname;
+    if (changed && features.pageAnnounce && pathname !== "/results") speak(title + " page");
   }, [pathname, features.pageAnnounce]);
 
   // Vibrate when a control is pressed, and when an error message appears.
@@ -47,6 +52,33 @@ export default function AppEffects() {
     observer.observe(document.body, { childList: true, subtree: true });
     return () => { document.removeEventListener("click", onClick, true); observer.disconnect(); };
   }, [features.buttonHaptics]);
+
+  // Spoken guidance: the name of a pressed control, and error / status messages as they appear.
+  // Links are not announced (the page name is spoken when the new page opens).
+  useEffect(() => {
+    if (!features.speech) return undefined;
+    const clean = text => String(text || "").replace(/\s+/g, " ").trim();
+    const onClick = event => {
+      const control = event.target.closest?.('button, input[type="radio"], input[type="checkbox"], select');
+      if (!control) return;
+      const name = control.matches("input, select") ? clean(control.getAttribute("aria-label") || control.closest("label")?.textContent) : clean(control.getAttribute("aria-label") || control.textContent);
+      if (name) speak(name);
+    };
+    document.addEventListener("click", onClick, true);
+    const MESSAGE = '[role="alert"], [role="status"]';
+    const observer = new MutationObserver(records => {
+      for (const record of records) for (const node of record.addedNodes) {
+        const element = node.nodeType === 1 ? node : node.parentElement;
+        const region = element?.closest?.(MESSAGE) || element?.querySelector?.(MESSAGE);
+        const text = clean(region?.textContent);
+        if (!text) continue;
+        speak(region.getAttribute("role") === "alert" ? "Error: " + text : text);
+        return;
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => { document.removeEventListener("click", onClick, true); observer.disconnect(); };
+  }, [features.speech]);
 
   return null;
 }
