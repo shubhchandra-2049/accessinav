@@ -51,14 +51,28 @@ export function DisabilityProvider({ children }) {
     if (!on) stopSpeaking();
   }, []);
 
+  const { pathname } = useLocation();
+
+  // On the Search and Results pages, the "Accessibility requirement" chosen for the search temporarily decides how
+  // the app looks and behaves (theme, speech, vibration, simplified results). It is not saved, and it is dropped
+  // as soon as the user leaves those pages; the saved profile is untouched.
+  const [searchProfile, setSearchProfileState] = useState(null);
+  const inSearchFlow = pathname === "/search" || pathname === "/results";
+  const [wasInSearchFlow, setWasInSearchFlow] = useState(inSearchFlow);
+  if (wasInSearchFlow !== inSearchFlow) { // adjusted during render (React's pattern for state derived from a change), so no stale flash
+    setWasInSearchFlow(inSearchFlow);
+    if (!inSearchFlow) setSearchProfileState(null);
+  }
+  const setSearchProfile = useCallback(id => setSearchProfileState(isProfileId(id) ? id : null), []);
+  const activeProfile = inSearchFlow && searchProfile ? searchProfile : selectedProfile;
+
   // <html data-profile> drives the profile themes in index.css. It is removed on the sign-in / sign-up / setup
   // pages, so they always look normal, and set again on every other page.
-  const { pathname } = useLocation();
   useEffect(() => {
     const root = document.documentElement;
     if (PROFILE_FREE_PATHS.includes(pathname)) delete root.dataset.profile;
-    else root.dataset.profile = selectedProfile;
-  }, [pathname, selectedProfile]);
+    else root.dataset.profile = activeProfile;
+  }, [pathname, activeProfile]);
 
   const adopt = useCallback(id => { setProfile(id); setChosen(true); writeStored(id); }, []);
 
@@ -99,11 +113,13 @@ export function DisabilityProvider({ children }) {
     chooseProfile,
     setSelectedProfile: chooseProfile,
     profile: PROFILES.find(profile => profile.id === selectedProfile) || PROFILES[0],
-    // Muting turns off everything that speaks; vibration is unaffected.
-    features: voiceEnabled ? (FEATURES[selectedProfile] || {}) : { ...(FEATURES[selectedProfile] || {}), speech: false, pageAnnounce: false },
+    activeProfile,
+    setSearchProfile,
+    // Features follow the profile in use right now. Muting turns off everything that speaks; vibration is unaffected.
+    features: voiceEnabled ? (FEATURES[activeProfile] || {}) : { ...(FEATURES[activeProfile] || {}), speech: false, pageAnnounce: false },
     voiceEnabled,
     setVoiceEnabled,
-  }), [selectedProfile, profileChosen, profileReady, chooseProfile, voiceEnabled, setVoiceEnabled]);
+  }), [selectedProfile, activeProfile, setSearchProfile, profileChosen, profileReady, chooseProfile, voiceEnabled, setVoiceEnabled]);
 
   return <DisabilityContext.Provider value={value}>{children}</DisabilityContext.Provider>;
 }

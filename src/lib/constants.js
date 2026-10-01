@@ -9,6 +9,9 @@ export const PROFILES = [
 
 export const DEFAULT_PROFILE = "wheelchair";
 
+// The profile id for a route-search value ("visual" -> "visually_impaired"); null if unknown.
+export const profileIdForSearchValue = value => PROFILES.find(profile => profile.searchValue === value)?.id ?? null;
+
 // Pages shown before a profile is in use. They always look normal: no profile theme, spoken titles or haptics.
 export const PROFILE_FREE_PATHS = ["/", "/login", "/signup", "/select-disability"];
 

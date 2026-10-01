@@ -13,6 +13,7 @@ import { vibrate } from "../lib/haptics.js";
 import { speak, stopSpeaking } from "../lib/speech.js";
 import { routeSummary } from "../lib/routeText.js";
 import { useDisability } from "../context/useDisability.js";
+import { profileIdForSearchValue } from "../lib/constants.js";
 
 const ACCESS_ISSUE = /elevator|escalator|ramp|toilet|stairs|steps|passage/i;
 
@@ -28,7 +29,9 @@ export default function Results() {
   const [selected, setSelected] = useState(null);
   const [reports, setReports] = useState([]);
   const [cardOpen, setCardOpen] = useState(false);
-  const { features } = useDisability();
+  const { features, setSearchProfile } = useDisability();
+  // Results look and behave like the requirement the search was made with (e.g. visually impaired -> high contrast).
+  useEffect(() => { setSearchProfile(profileIdForSearchValue(disability)); }, [disability, setSearchProfile]);
 
   // Profile behaviour when a route is chosen: vibration, the full-screen visual card, or spoken guidance.
   function chooseRoute(route) {

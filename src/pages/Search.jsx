@@ -1,5 +1,6 @@
 import { ArrowLeftRight, LoaderCircle, Search as SearchIcon, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { profileIdForSearchValue } from "../lib/constants.js";
 import { useLocation, useNavigate } from "react-router-dom";
 import DisabilitySelector from "../components/DisabilitySelector.jsx";
 import LocationAutocomplete from "../components/LocationAutocomplete.jsx";
@@ -17,8 +18,10 @@ export default function Search() {
  const [destination, setDestination] = useState(initial.destination || "");
  const [originPlace, setOriginPlace] = useState(initial.start ? { name: initial.origin, ...initial.start } : null);
  const [destinationPlace, setDestinationPlace] = useState(initial.end ? { name: initial.destination, ...initial.end } : null);
- const { profile } = useDisability();
+ const { profile, setSearchProfile } = useDisability();
  const [disability, setDisability] = useState(initial.disability || profile.searchValue); // saved profile is the default; still editable
+ // The chosen requirement also changes how the page looks and behaves right away (see DisabilityContext).
+ useEffect(() => { setSearchProfile(profileIdForSearchValue(disability)); }, [disability, setSearchProfile]);
  const [loading, setLoading] = useState(false);
  const [error, setError] = useState("");
  const navigate = useNavigate();
