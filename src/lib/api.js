@@ -72,6 +72,9 @@ export async function getPendingReports() { const payload = await request("/dash
 export async function getVerifiedReports() { const payload = await request("/dashboard/verified", { protectedRead: true }); return unwrapList(payload, "reports", "verified_reports").map(normalizeReport); }
 export async function getSosAlerts() { return unwrapList(await request("/sos", { protectedRead: true }), "sos", "alerts", "requests"); }
 export async function sendSOS({ latitude, longitude }) { return request("/sos", { method: "POST", body: { latitude: Number(latitude), longitude: Number(longitude) } }); }
+export async function updateSOSLocation(id, { latitude, longitude }) { return request("/sos/" + encodeURIComponent(id) + "/location", { method: "POST", body: { latitude: Number(latitude), longitude: Number(longitude) } }); }
+export async function cancelSOS(id) { return request("/sos/" + encodeURIComponent(id) + "/cancel", { method: "POST" }); }
 export async function resolveSOS(id) { return request("/sos/" + encodeURIComponent(id) + "/resolve", { method: "POST" }); }
+export async function getMe() { return request("/auth/me", { protectedRead: true }); }
 export async function getHealth() { return request("/health"); }
 

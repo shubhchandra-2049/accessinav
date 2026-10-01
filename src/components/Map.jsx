@@ -39,7 +39,16 @@ export default function Map(props) {
   return failed ? <RoutePreview {...props} /> : <LiveMap {...props} onFail={() => setFailed(true)} />;
 }
 
-function LiveMap({ className = "", search, selectedRoute, routes, reports, onFail }) {
+function alertMarkerElement() {
+  const el = document.createElement("button");
+  el.type = "button";
+  el.setAttribute("aria-label", "SOS alert");
+  el.style.cssText = "width:26px;height:26px;border-radius:50%;border:4px solid #fff;background:#b91c1c;box-shadow:0 0 0 4px rgba(185,28,28,.35);cursor:pointer;padding:0";
+  return el;
+}
+
+function LiveMap({ className = "", search, selectedRoute, routes, reports, alerts, focusPoint, onFail }) {
+  const fitted = useRef("");
   const container = useRef(null);
   const mapRef = useRef(null);
   const glRef = useRef(null);
@@ -109,16 +118,32 @@ function LiveMap({ className = "", search, selectedRoute, routes, reports, onFai
     });
 
     const bounds = new mapboxgl.LngLatBounds();
+    (alerts || []).forEach(alert => {
+      const lat = Number(alert.latitude), lon = Number(alert.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+      const popup = new mapboxgl.Popup({ offset: 18 }).setDOMContent(popupContent("SOS alert", [alert.created_at && "Raised: " + new Date(alert.created_at).toLocaleString(), lat.toFixed(5) + ", " + lon.toFixed(5)]));
+      markers.current.push(new mapboxgl.Marker({ element: alertMarkerElement() }).setLngLat([lon, lat]).setPopup(popup).addTo(map));
+      bounds.extend([lon, lat]);
+    });
     const active = features.filter(feature => feature.properties.active);
     (active.length ? active : features).forEach(feature => feature.geometry.coordinates.forEach(point => bounds.extend(point)));
     [startPoint, endPoint].forEach(point => point && bounds.extend(point));
-    if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 600 });
-  }, [ready, routes, selectedRoute, search, reports]);
+    // Re-fit only when what is being shown changes, not on every live position update.
+    const signature = [selectedRoute?.id, routes?.length, search?.start?.latitude, search?.end?.latitude, (alerts || []).map(alert => alert.id).join(",")].join("|");
+    if (!bounds.isEmpty() && signature !== fitted.current) { fitted.current = signature; map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 600 }); }
+  }, [ready, routes, selectedRoute, search, reports, alerts]);
+
+  useEffect(() => {
+    const lat = Number(focusPoint?.latitude), lon = Number(focusPoint?.longitude);
+    if (ready && mapRef.current && Number.isFinite(lat) && Number.isFinite(lon)) mapRef.current.flyTo({ center: [lon, lat], zoom: 15 });
+  }, [ready, focusPoint]);
 
   const source = sourceLabel(selectedRoute);
   const hasGeometry = isLineString(selectedRoute?.geometry);
   return <section aria-label="Route map" className={"relative isolate min-h-72 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 " + className}>
-    <div ref={container} className="absolute inset-0" />
+    {/* Inline style on purpose: mapbox-gl.css sets .mapboxgl-map { position: relative } outside Tailwind's layers,
+        which would override absolute/inset-0 classes and collapse the container to height 0 (blank map). */}
+    <div ref={container} style={{ position: "absolute", inset: 0 }} />
     <div className="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-md">
       <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800"><MapPin size={16} className="text-blue-700" aria-hidden="true"/>{selectedRoute ? selectedRoute.mode : "Select a route"}</span>
       {selectedRoute && <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-900"><Accessibility size={15} aria-hidden="true"/>{selectedRoute.duration}{source ? " · Source: " + source : ""}{hasGeometry ? "" : " · No path available"}</span>}
