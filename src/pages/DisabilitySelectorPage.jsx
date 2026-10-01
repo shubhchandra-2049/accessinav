@@ -4,6 +4,7 @@ import { Accessibility, ArrowRight, LoaderCircle } from "lucide-react";
 import ProfileToggle from "../components/ProfileToggle.jsx";
 import { useDisability } from "../context/useDisability.js";
 import { getCurrentUser } from "../lib/auth.js";
+import { landingPath } from "../lib/landing.js";
 
 /** First-time setup after sign-up: choose an accessibility profile, then continue to Home. */
 export default function DisabilitySelectorPage() {
@@ -13,7 +14,10 @@ export default function DisabilitySelectorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  if (!getCurrentUser()) return <Navigate to="/login" replace />;
+  const user = getCurrentUser();
+  if (!user) return <Navigate to="/login" replace />;
+  // Only users have an accessibility profile to set up; volunteers and organizations go to their dashboard.
+  if (user.user_type !== "user") return <Navigate to={landingPath(user)} replace />;
 
   async function next() {
     setSaving(true); setError("");

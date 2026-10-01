@@ -4,11 +4,12 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../components/Header.jsx";
 import { signup } from "../lib/api.js";
 import { setCurrentUser } from "../lib/auth.js";
+import { landingPath } from "../lib/landing.js";
 
 export default function SignUp() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const requestedRole = searchParams.get("role");
+  const requestedRole = searchParams.get("role") === "organization" ? "ngo" : searchParams.get("role"); // "organization" is accepted as an alias
   const [values, setValues] = useState({ name: "", email: "", password: "", confirmPassword: "", role: ["user", "volunteer", "ngo"].includes(requestedRole) ? requestedRole : "user" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -38,8 +39,8 @@ export default function SignUp() {
     try {
       const authResponse = await signup(values);
       setCurrentUser(authResponse);
-      // A brand-new account has no profile yet: first-time setup (the route guard also covers older backends).
-      navigate(authResponse.disability_profile ? "/home" : "/select-disability", { replace: true });
+      // New users choose an accessibility profile first; volunteers and organizations go straight to their dashboard.
+      navigate(landingPath(authResponse, { signup: true }), { replace: true });
     } catch (requestError) {
       setError(requestError.message || "Account creation failed. Please try again.");
     } finally {

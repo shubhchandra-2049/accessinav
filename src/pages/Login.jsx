@@ -3,6 +3,7 @@ import { Eye, EyeOff, LoaderCircle, LogIn } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../lib/api.js";
 import { setCurrentUser } from "../lib/auth.js";
+import { landingPath } from "../lib/landing.js";
 
 function Login() {
   const navigate = useNavigate();
@@ -29,9 +30,8 @@ function Login() {
     try {
       const authResponse = await login({ email: normalizedEmail, password });
       setCurrentUser(authResponse);
-      // The account's saved profile decides the next page: none yet -> first-time setup, otherwise Home.
-      // (null = account has not chosen; undefined = backend without profile storage, so let the route guard decide)
-      navigate(authResponse.disability_profile === null ? "/select-disability" : "/home", { replace: true });
+      // Users: first-time setup if they have no profile yet, otherwise Home. Volunteers and organizations: their dashboard.
+      navigate(landingPath(authResponse), { replace: true });
     } catch (requestError) {
       setError(requestError.message || "Login failed. Check your details and try again.");
     } finally {
