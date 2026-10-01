@@ -9,5 +9,8 @@ export const PROFILES = [
 
 export const DEFAULT_PROFILE = "wheelchair";
 
+// Pages shown before a profile is in use. They always look normal: no profile theme, spoken titles or haptics.
+export const PROFILE_FREE_PATHS = ["/", "/login", "/signup", "/select-disability"];
+
 // Options for the route-search selector (the same four profiles).
 export const ACCESSIBILITY_OPTIONS = PROFILES.map(profile => ({ id: profile.searchValue, name: profile.name, description: profile.searchDescription }));

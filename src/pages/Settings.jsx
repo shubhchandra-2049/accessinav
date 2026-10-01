@@ -11,7 +11,7 @@ const WHAT_CHANGES = {
   wheelchair: ["Routes show whether they are step-free (0 steps).", "Results list community reports about lifts, ramps and accessible toilets near your start.", "Search starts with the Wheelchair preference."],
   cognitive: ["Results show at most 2 route options.", "Each route gets plain step-by-step directions.", "Text is larger and spaced out across the app."],
   hearing_impaired: ["Choosing a route opens a full-screen visual route card.", "Vibration patterns confirm actions on supported phones.", "Everything is shown as text, so no audio is needed."],
-  visually_impaired: ["Route results and your chosen route are read aloud.", "Vibration patterns confirm actions on supported phones.", "The display uses larger text, darker text and stronger outlines."],
+  visually_impaired: ["Route results and your chosen route are read aloud.", "Vibration confirms button presses and errors on supported phones, and each page name is spoken.", "The whole app switches to a high-contrast black, white and yellow display with larger text, 60px-tall buttons and a single column."],
 };
 
 export default function Settings() {

@@ -12,6 +12,7 @@ import NgoDashboard from "./pages/NgoDashboard";
 import Settings from "./pages/Settings";
 import DisabilitySelectorPage from "./pages/DisabilitySelectorPage";
 import RequireProfile from "./components/RequireProfile";
+import AppEffects from "./components/AppEffects";
 import { DisabilityProvider } from "./context/DisabilityContext.jsx";
 
 // Pages for logged-in users: first-time users are sent to the profile selector before reaching them.
@@ -20,6 +21,7 @@ const guarded = element => <RequireProfile>{element}</RequireProfile>;
 function App() {
   return (
     <DisabilityProvider>
+    <AppEffects />
     <Routes>
       <Route path="/" element={<AuthChoice />} />
       <Route path="/login" element={<Login />} />

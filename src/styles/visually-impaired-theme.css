@@ -1,0 +1,94 @@
+/*
+  High-contrast theme for the "Visually impaired" profile.
+  Applied app-wide by <html data-profile="visually_impaired"> (set by DisabilityProvider).
+
+  Palette: black background, white text, yellow (#FFFF00) primary accent, lime (#00FF00) selected/success,
+  red (#FF0000) warnings and SOS. No grays.
+
+  These rules are intentionally unlayered so they override Tailwind's layered utility classes, and they
+  match Tailwind class names by substring/token, so no component needs to know about the theme.
+  Colour rules come first and the button "families" later, so the later, more specific rules win.
+*/
+
+/* ---------- Base: colour, type ---------- */
+html[data-profile="visually_impaired"] { font-size: 112.5%; /* 18px */ background: #000; color-scheme: dark; }
+html[data-profile="visually_impaired"] body { background: #000; color: #fff; font-family: Arial, Helvetica, system-ui, sans-serif; font-weight: 600; line-height: 1.8; }
+
+html[data-profile="visually_impaired"] :is([class*="bg-white"], [class*="bg-slate-"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-emerald-50"], [class*="bg-amber-50"], [class*="bg-red-50"], [class*="bg-gradient"]) { background-color: #000; background-image: none; }
+html[data-profile="visually_impaired"] :is([class*="text-slate-"], [class*="text-white"], [class*="text-black"]) { color: #fff; }
+html[data-profile="visually_impaired"] :is([class*="text-blue-"], [class*="text-amber-"]) { color: #ff0; }
+html[data-profile="visually_impaired"] [class*="text-emerald-"] { color: #0f0; }
+html[data-profile="visually_impaired"] [class*="text-red-"] { color: #f00; }
+
+/* Headings (the [class] form outranks the colour rules above) */
+html[data-profile="visually_impaired"] :is(h1, h1[class]) { font-size: 1.78rem; font-weight: 800; color: #ff0; }
+html[data-profile="visually_impaired"] :is(h2, h2[class]) { font-size: 1.55rem; font-weight: 800; color: #fff; }
+html[data-profile="visually_impaired"] :is(h3, h3[class]) { font-size: 1.33rem; font-weight: 800; color: #ff0; }
+
+/* Small text is raised to 16px+ (1rem = 18px here) */
+html[data-profile="visually_impaired"] :is([class~="text-xs"], [class~="text-sm"]) { font-size: 1rem; }
+html[data-profile="visually_impaired"] [class~="text-[10px]"] { font-size: 1rem; }
+
+/* ---------- Sections instead of cards ---------- */
+html[data-profile="visually_impaired"] [class*="rounded"] { border-radius: 0; }
+html[data-profile="visually_impaired"] [class*="shadow"] { box-shadow: none; }
+html[data-profile="visually_impaired"] [class*="border"] { border-color: #fff; }
+html[data-profile="visually_impaired"] [class~="border"] { border-width: 2px; }
+html[data-profile="visually_impaired"] [class~="border-2"] { border-width: 3px; }
+html[data-profile="visually_impaired"] [class~="border-t"] { border-top-width: 2px; }
+html[data-profile="visually_impaired"] [class~="border-b"] { border-bottom-width: 2px; }
+html[data-profile="visually_impaired"] main { padding: 24px; }
+
+/* Single column, no horizontal rows */
+html[data-profile="visually_impaired"] :is([class~="grid"], [class*="grid-cols-"]) { grid-template-columns: minmax(0, 1fr); }
+html[data-profile="visually_impaired"] [class*="flex-row"] { flex-direction: column; }
+html[data-profile="visually_impaired"] [class*="sticky"] { position: static; }
+
+/* ---------- Navigation: vertical stack ---------- */
+html[data-profile="visually_impaired"] header > div { flex-direction: column; align-items: stretch; }
+html[data-profile="visually_impaired"] header :is(nav, nav + div) { flex-direction: column; align-items: stretch; }
+html[data-profile="visually_impaired"] header a { display: flex; align-items: center; padding: 0 16px; }
+html[data-profile="visually_impaired"] header a[aria-current="page"] { background-color: #ff0; color: #000; }
+
+/* ---------- Decorative icons removed; functional ones kept ---------- */
+html[data-profile="visually_impaired"] svg { display: none; }
+html[data-profile="visually_impaired"] :is(span, div)[class~="place-items-center"]:has(> svg:only-child) { display: none; } /* icon badges (never spans that also hold text) */
+/* Icon-only controls keep their icon; they always have an accessible name (aria-label or visually hidden text) */
+html[data-profile="visually_impaired"] :is(button, a)[aria-label] > svg,
+html[data-profile="visually_impaired"] :is(button, a):has(> .sr-only) > svg { display: inline-block; }
+
+/* ---------- Buttons: 60px+, bold, 20px text, white border ---------- */
+html[data-profile="visually_impaired"] :where(button, [role="button"], a[class*="min-h-"], header a) { min-height: 60px; min-width: 60px; font-size: 1.11rem; font-weight: 700; border: 3px solid #fff; background-color: #000; color: #fff; text-decoration: none; }
+html[data-profile="visually_impaired"] main :is(button, a)[class*="min-h-"] { width: 100%; }
+/* Standalone links (not inside a sentence) get a 60px touch target too; links inside text stay inline */
+html[data-profile="visually_impaired"] :is(main > a, main :not(p, li) > a) { display: inline-flex; align-items: center; min-height: 60px; }
+
+/* Button families by existing colour classes: primary = yellow, selected/success = lime, danger = red */
+html[data-profile="visually_impaired"] :is([class*="bg-blue-7"], [class*="bg-slate-950"]) { background-color: #ff0; color: #000; border: 3px solid #fff; }
+html[data-profile="visually_impaired"] [class*="bg-emerald-7"] { background-color: #0f0; color: #000; border: 3px solid #fff; }
+html[data-profile="visually_impaired"] [class*="bg-red-7"] { background-color: #f00; color: #000; border: 3px solid #fff; } /* black on red = 5.25:1 (white would be only 4:1) */
+html[data-profile="visually_impaired"] :is([class*="bg-blue-7"], [class*="bg-slate-950"], [class*="bg-emerald-7"], [class*="bg-red-7"]) * { color: inherit; }
+html[data-profile="visually_impaired"] [class*="bg-emerald-7"][class*="bg-emerald-7"] { color: #000; }
+html[data-profile="visually_impaired"] :is(button, a):hover { text-decoration: underline; }
+html[data-profile="visually_impaired"] button:disabled { background-color: #000; color: #fff; border: 3px dashed #fff; opacity: 1; }
+
+/* ---------- Form controls ---------- */
+html[data-profile="visually_impaired"] :is(input:not([type="radio"]):not([type="checkbox"]), textarea, select) { background-color: #000; color: #fff; border: 3px solid #fff; min-height: 60px; font-size: 1rem; padding: 16px; border-radius: 0; }
+html[data-profile="visually_impaired"] ::placeholder { color: #fff; font-style: italic; opacity: 1; }
+html[data-profile="visually_impaired"] option { background: #000; color: #fff; }
+html[data-profile="visually_impaired"] input[type="checkbox"] { accent-color: #ff0; width: 32px; height: 32px; }
+html[data-profile="visually_impaired"] label { font-size: 1rem; }
+
+/* Selectable profile cards: the selected one is lime with a text marker (not colour alone) */
+html[data-profile="visually_impaired"] label:has(> input[type="radio"]) { border-width: 3px; }
+html[data-profile="visually_impaired"] label:has(> input[type="radio"]:checked) { border: 5px solid #0f0; }
+html[data-profile="visually_impaired"] label:has(> input[type="radio"]:checked),
+html[data-profile="visually_impaired"] label:has(> input[type="radio"]:checked) * { color: #0f0; }
+html[data-profile="visually_impaired"] label:has(> input[type="radio"]:checked)::after { content: "SELECTED"; font-weight: 800; color: #0f0; letter-spacing: 0.08em; }
+
+/* ---------- Focus, dialogs, map popups ---------- */
+html[data-profile="visually_impaired"] :focus-visible { outline: 4px solid #fff !important; outline-offset: 3px; }
+html[data-profile="visually_impaired"] dialog { background: #000; color: #fff; border: 3px solid #fff; }
+html[data-profile="visually_impaired"] dialog::backdrop { background: rgba(0, 0, 0, 0.9); }
+html[data-profile="visually_impaired"] .mapboxgl-popup-content { background: #000; color: #fff; border: 3px solid #fff; border-radius: 0; }
+html[data-profile="visually_impaired"] .mapboxgl-popup-tip { display: none; }

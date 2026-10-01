@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { DEFAULT_PROFILE, PROFILES } from "../lib/constants.js";
+import { useLocation } from "react-router-dom";
+import { DEFAULT_PROFILE, PROFILES, PROFILE_FREE_PATHS } from "../lib/constants.js";
 import { getMe, saveProfile } from "../lib/api.js";
 import { getCurrentUser } from "../lib/auth.js";
 import { DisabilityContext } from "./useDisability.js";
@@ -11,7 +12,7 @@ const FEATURES = {
   wheelchair: { stepFree: true, accessInfo: true },
   cognitive: { simplified: true, steps: true },
   hearing_impaired: { visualCard: true, haptics: true },
-  visually_impaired: { speech: true, haptics: true },
+  visually_impaired: { speech: true, haptics: true, buttonHaptics: true, pageAnnounce: true },
 };
 
 const isProfileId = value => PROFILES.some(profile => profile.id === value);
@@ -37,7 +38,14 @@ export function DisabilityProvider({ children }) {
   const [profileReady, setReady] = useState(() => !getCurrentUser()); // false while syncing a logged-in user
   const hadUser = useRef(Boolean(getCurrentUser()));
 
-  useEffect(() => { document.documentElement.dataset.profile = selectedProfile; }, [selectedProfile]); // drives index.css
+  // <html data-profile> drives the profile themes in index.css. It is removed on the sign-in / sign-up / setup
+  // pages, so they always look normal, and set again on every other page.
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const root = document.documentElement;
+    if (PROFILE_FREE_PATHS.includes(pathname)) delete root.dataset.profile;
+    else root.dataset.profile = selectedProfile;
+  }, [pathname, selectedProfile]);
 
   const adopt = useCallback(id => { setProfile(id); setChosen(true); writeStored(id); }, []);
 
